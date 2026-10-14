@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Offer Generator — The art of using AI · GeoLab</title>
+  <meta name="description" content="Create elegant, print-ready commercial offers for GeoLab's program The art of using AI." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <img src="./TheAI.png" alt="The art of using AI logo" class="brand-logo" onerror="this.style.display='none'" />
+      <div>
+        <h1>Offer Template Generator</h1>
+        <p class="brand-sub">by <strong>GeoLab</strong> · The art of using AI</p>
+      </div>
+    </div>
+    <div class="actions">
+      <button id="btn-copy" class="btn btn-ghost" type="button">Copy Summary</button>
+      <button id="btn-reset" class="btn btn-ghost" type="button">Reset</button>
+      <button id="btn-print" class="btn btn-primary" type="button">Print / Save PDF</button>
+    </div>
+  </header>
+
+  <div class="mobile-tabs" role="tablist">
+    <button id="tab-form" class="tab active" type="button" data-target="form">Edit</button>
+    <button id="tab-preview" class="tab" type="button" data-target="preview">Preview</button>
+  </div>
+
+  <main class="layout">
+    <!-- LEFT: form -->
+    <section class="panel form-panel" id="panel-form" aria-label="Offer inputs">
+      <form id="offer-form" autocomplete="off" onsubmit="return false">
+        <fieldset class="card">
+          <legend class="card-title"><span class="step">1</span>Client Organization</legend>
+          <label class="field">
+            <span>Organization Name</span>
+            <input id="client-name" type="text" placeholder="e.g. Acme Corporation" />
+          </label>
+          <label class="field">
+            <span>Short Description / Scope of Work</span>
+            <textarea id="client-scope" rows="4" placeholder="Brief background or project scope…"></textarea>
+          </label>
+        </fieldset>
+
+        <fieldset class="card">
+          <legend class="card-title"><span class="step">2</span>Offer Metadata</legend>
+          <div class="grid-2">
+            <label class="field">
+              <span>Offer Date</span>
+              <input id="offer-date" type="date" />
+            </label>
+            <label class="field">
+              <span>Reference Number</span>
+              <div class="input-group">
+                <input id="offer-ref" type="text" />
+                <button id="btn-regen" class="icon-btn" type="button" title="Generate new reference" aria-label="Generate new reference">↻</button>
+              </div>
+            </label>
+          </div>
+          <label class="field">
+            <span>Currency</span>
+            <select id="currency">
+              <option value="GEL">GEL (₾)</option>
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+            </select>
+          </label>
+        </fieldset>
+
+        <fieldset class="card">
+          <legend class="card-title"><span class="step">3</span>Products &amp; Services</legend>
+          <div class="items-head">
+            <span>Name</span><span>SKU</span><span>Qty</span><span>Unit Price</span><span>Total</span><span></span>
+          </div>
+          <div id="items"></div>
+          <button id="btn-add" class="btn btn-dashed" type="button">+ Add line item</button>
+
+          <div class="tax-row">
+            <label class="switch">
+              <input id="tax-toggle" type="checkbox" />
+              <span class="slider"></span>
+              <span class="switch-label">Apply Tax / VAT</span>
+            </label>
+            <label class="tax-rate" id="tax-rate-wrap">
+              <input id="tax-rate" type="number" min="0" max="100" step="0.1" value="18" />
+              <span>%</span>
+            </label>
+          </div>
+
+          <dl class="totals-mini">
+            <div><dt>Subtotal</dt><dd id="mini-subtotal">0</dd></div>
+            <div id="mini-tax-row" hidden><dt>Tax</dt><dd id="mini-tax">0</dd></div>
+            <div class="grand"><dt>Grand Total</dt><dd id="mini-total">0</dd></div>
+          </dl>
+        </fieldset>
+      </form>
+    </section>
+
+    <!-- RIGHT: preview -->
+    <section class="panel preview-panel" id="panel-preview" aria-label="Offer preview">
+      <article class="a4" id="doc">
+        <header class="doc-header">
+          <div class="doc-brand">
+            <img src="./TheAI.png" alt="The art of using AI" class="doc-logo" onerror="this.style.display='none'" />
+            <p class="doc-credit">A program by <strong>GeoLab</strong></p>
+          </div>
+          <div class="doc-meta">
+            <h2>Commercial Offer</h2>
+            <dl>
+              <div><dt>Reference</dt><dd id="p-ref"></dd></div>
+              <div><dt>Date</dt><dd id="p-date"></dd></div>
+            </dl>
+          </div>
+        </header>
+
+        <p class="doc-tagline"><em>The art of using AI</em> — A curated educational program at the intersection of human creativity and artificial intelligence, designed for curious minds ready to shape the future.</p>
+
+        <section class="doc-client">
+          <p class="label">Prepared for</p>
+          <h3 id="p-client"></h3>
+          <p id="p-scope" class="scope"></p>
+        </section>
+
+        <table class="doc-table">
+          <thead>
+            <tr><th>#</th><th>Product / Service</th><th>SKU</th><th class="r">Qty</th><th class="r">Unit Price</th><th class="r">Total</th></tr>
+          </thead>
+          <tbody id="p-items"></tbody>
+        </table>
+
+        <div class="doc-summary">
+          <dl class="summary-box">
+            <div><dt>Subtotal</dt><dd id="p-subtotal"></dd></div>
+            <div id="p-tax-row" hidden><dt id="p-tax-label">Tax</dt><dd id="p-tax"></dd></div>
+            <div class="grand"><dt>Grand Total</dt><dd id="p-total"></dd></div>
+          </dl>
+        </div>
+
+        <footer class="doc-footer">
+          <div class="signatures">
+            <div class="sig"><span class="line"></span><p>For GeoLab</p></div>
+            <div class="sig"><span class="line"></span><p>Accepted by <span id="p-client-sig">Client</span> · Date</p></div>
+          </div>
+          <div class="contact">
+            <span>GeoLab · The art of using AI</span>
+            <span>info@geolab.edu.ge</span>
+            <span>geolab.edu.ge</span>
+            <span>Tbilisi, Georgia</span>
+          </div>
+        </footer>
+      </article>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <template id="item-tpl">
+    <div class="item-row">
+      <input class="i-name" type="text" placeholder="Service name" aria-label="Product name" />
+      <input class="i-sku" type="text" placeholder="SKU" aria-label="SKU" />
+      <input class="i-qty" type="number" min="0" step="1" value="1" aria-label="Quantity" />
+      <input class="i-price" type="number" min="0" step="0.01" placeholder="0.00" aria-label="Unit price" />
+      <output class="i-total">0</output>
+      <button class="icon-btn i-del" type="button" aria-label="Remove item" title="Remove">✕</button>
+    </div>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>

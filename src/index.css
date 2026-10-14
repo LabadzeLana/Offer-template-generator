@@ -1,0 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Plus Jakarta Sans', Inter, system-ui, sans-serif;
+  --color-canvas: #F8F9FA;
+  --color-ink: #1A1A1A;
+  --color-line: #E5E7EB;
+  --color-accent: #0F172A;
+}
+
+@layer base {
+  body { @apply bg-canvas text-ink font-sans antialiased text-sm; }
+}
+
+@layer components {
+  .input {
+    @apply w-full rounded-lg border border-line bg-white px-3 py-2 text-ink outline-none transition
+      placeholder:text-slate-400 focus:border-accent focus:ring-3 focus:ring-slate-900/10;
+  }
+  .label { @apply mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-slate-500; }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-line bg-white px-3.5 py-2
+      text-[13px] font-semibold text-ink transition hover:-translate-y-px hover:border-slate-300 active:translate-y-0 cursor-pointer;
+  }
+  .btn-primary { @apply bg-accent text-white border-accent shadow-lg shadow-slate-900/20 hover:bg-slate-800; }
+  .icon-btn {
+    @apply inline-grid size-8 shrink-0 place-items-center rounded-md border border-line bg-white text-slate-500 transition
+      hover:border-accent hover:text-accent cursor-pointer disabled:opacity-30 disabled:pointer-events-none;
+  }
+}
+
+/* A4 document */
+.a4 {
+  box-sizing: border-box;
+  width: 210mm;
+  height: 297mm;
+  max-height: 297mm;
+  overflow: hidden;
+  background: var(--doc-bg);
+  color: var(--doc-text);
+  transform-origin: top left;
+  font-size: 10pt;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } }
+.animate-rise { animation: rise .35s ease both; }
+
+@page { size: A4; margin: 0; }
+@media print {
+  html, body { background: #fff !important; margin: 0 !important; padding: 0 !important; width: 210mm; height: 297mm; overflow: hidden; }
+  main { display: block !important; padding: 0 !important; margin: 0 !important; gap: 0 !important; max-width: none !important; }
+  .a4 { margin: 0 !important; break-after: avoid; break-inside: avoid; page-break-after: avoid; }
+  .no-print { display: none !important; }
+  .print-root { display: block !important; padding: 0 !important; margin: 0 !important; position: static !important; max-height: none !important; overflow: visible !important; }
+  .print-scale { transform: none !important; width: auto !important; height: auto !important; }
+  .a4 { box-shadow: none !important; border-radius: 0 !important; overflow: hidden; }
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+}
