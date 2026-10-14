@@ -26,8 +26,26 @@ export default function App() {
     try {
       const { default: html2pdf } = await import('html2pdf.js')
       const clientName = state.client.name.trim().replace(/[^\w\-]+/g, '_')
+      const PX_PER_MM = 3.7795275591 // 96 dpi → mm
+      const A4_W_MM = 210
+      const A4_W_PX = Math.round(A4_W_MM * PX_PER_MM) // 794 px
+
+      // Measure the natural content height with the fixed A4 height temporarily removed
+      const prevHeight = element.style.height
+      const prevMaxHeight = element.style.maxHeight
+      const prevOverflow = element.style.overflow
+      element.style.height = 'auto'
+      element.style.maxHeight = 'none'
+      element.style.overflow = 'visible'
+      const contentH_px = element.scrollHeight
+      element.style.height = prevHeight
+      element.style.maxHeight = prevMaxHeight
+      element.style.overflow = prevOverflow
+
+      const contentH_mm = contentH_px / PX_PER_MM
+
       const opt = {
-        margin: 0, // zero margin — no extra page height
+        margin: 0,
         filename: `Offer_${clientName || 'GeoLab'}_${new Date().toISOString().split('T')[0]}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: {
@@ -36,23 +54,29 @@ export default function App() {
           logging: false,
           scrollY: 0,
           scrollX: 0,
-          // Capture the un-scaled document at exact A4 pixel size (794×1122)
-          width: 794,
-          height: 1122,
-          windowWidth: 794,
+          width: A4_W_PX,
+          windowWidth: A4_W_PX,
           onclone: doc => {
             const el = doc.getElementById('offer-document')
+            // Remove fixed height so the capture area = actual content height
             Object.assign(el.style, {
-              transform: 'none', margin: '0', width: '794px', height: '1122px',
-              maxHeight: '1122px', boxShadow: 'none', borderRadius: '0',
+              transform: 'none',
+              margin: '0',
+              width: `${A4_W_PX}px`,
+              height: 'auto',
+              maxHeight: 'none',
+              overflow: 'visible',
+              boxShadow: 'none',
+              borderRadius: '0',
             })
           },
         },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: 'avoid-all' }, // prevents auto page creation
+        // Use a custom page size that exactly matches the content height → no blank space
+        jsPDF: { unit: 'mm', format: [A4_W_MM, contentH_mm], orientation: 'portrait' },
+        pagebreak: { mode: 'avoid-all' },
       }
       await html2pdf().set(opt).from(element).toPdf().get('pdf').then(pdf => {
-        // Safety net: drop any trailing page caused by sub-pixel rounding
+        // Safety net: drop any extra pages from sub-pixel rounding
         while (pdf.getNumberOfPages() > 1) pdf.deletePage(pdf.getNumberOfPages())
       }).save()
       toast('PDF downloaded')
